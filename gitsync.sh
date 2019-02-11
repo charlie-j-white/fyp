@@ -12,6 +12,7 @@ time=${string^^}
 
 git add gitsync.sh
 git add README.md
+git add .gitignore
 git add ./frances
 git add ./ernie
 
