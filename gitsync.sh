@@ -1,8 +1,12 @@
 
 # prepare date-time string
 
-time=$(date +"%a %d-%b-%Y %T")
-string=${time^^}
+string=$(date +"%a")
+day=${string^^}
+string=$(date +"%d-%b-%Y")
+date=${string^^}
+string=$(date +"%T")
+time=${string^^}
 
 # list of files to add, combine with .gitignore
 
@@ -13,7 +17,7 @@ git add ./ernie
 
 # rest of the sync commands
 
-git commit -m 'gfsdg'\ 'gfsdg'
+git commit -m $day\ $date\ $time
 #git ls-tree -r master --name-only
 git push -u origin master
 
