@@ -13,6 +13,7 @@
       double precision :: pres, vel, gam
 
       gam = 1.40
+      ! area terms S inlculded in the u variable, or cancelled
 
 
       
@@ -25,7 +26,6 @@
 
 
 ! calculate f vector
-
       f1 = vel*u1
       f2 = vel*u2 + pres
       f5 = vel*u5 + pres*vel

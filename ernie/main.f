@@ -4,7 +4,7 @@
       implicit none
 
       integer :: N, ii, jj, tmax
-      double precision :: mach_inf, area_rat, pres_rat, dx, gamm
+      double precision :: mach_inf, area_rat, pres_rat, dx, dt, cfl
       double precision, dimension(:), allocatable :: S, Sx, xpos, 
      &          pres, u1, u2, u5 
 
@@ -16,8 +16,9 @@
       mach_inf = 0.3
       area_rat = 2.0
       pres_rat = 0.8
+      cfl = 0.9
       N = 1000
-      tmax = 10000
+      tmax = 100000
 
 
 
@@ -47,8 +48,6 @@
 !
 
       call meshing(area_rat, N, S, Sx, dx, xpos)
-!      print*, Sx
-
 
 
 ! initialise variables 
@@ -57,13 +56,24 @@
       call initialise(N, mach_inf, pres_rat, pres, u1, u2, u5)
 
 
-
 ! start time stepping
 !-----------------------------------------------------------------------
       do ii = 1,tmax
              call boundaries(N, mach_inf, pres_rat, pres, u1, u2, u5)
-             call update(N, mach_inf, pres_rat, pres, u1, u2, u5)
+             call update(N, mach_inf, pres_rat, pres, u1, u2, u5, 
+     &                          S, Sx, dt, dx, cfl)
       end do
+
+
+
+
+! correct variables for area
+!-----------------------------------------------------------------------
+!      do ii = 0,N+1
+!             u1(ii) = u1(ii)/S(ii)
+!             u2(ii) = u2(ii)/S(ii)
+!             u5(ii) = u5(ii)/S(ii)
+!      end do
 
 
 

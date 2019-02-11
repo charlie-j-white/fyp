@@ -10,7 +10,8 @@ OBJS= 	main.o\
 	initialise.o\
 	boundaries.o\
 	update.o\
-	fvector.o
+	fvector.o\
+	qvector.o
 
 main: $(OBJS)
 	$(FC) -o $@ $^ $(FFLAGS)
