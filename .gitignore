@@ -1,6 +1,4 @@
 *.o
 /archive
 /CPA-1718
-/ernie/main
-/ernie/solution.plt
 /NOZZLECODE

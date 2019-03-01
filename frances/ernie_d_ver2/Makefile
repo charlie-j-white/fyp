@@ -24,7 +24,7 @@ main: $(OBJS)
 .PHONY: clean
 
 clean: 
-	rm main solution.plt $(OBJS)
+	rm main solution.plt MERGED.f $(OBJS)
 
 
 

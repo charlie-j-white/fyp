@@ -1,17 +1,14 @@
 
-      subroutine main(area_rat, J, N)
+      subroutine main(area_rat, J)
       
       implicit none
       
-      integer, intent(in) :: N
-      double precision, intent(in) :: area_rat
-      double precision, intent(out) :: J
+      double precision, intent(in) :: area_rat, J
 
-      integer :: ii, jj, tmax
+      integer :: N, ii, jj, tmax
       double precision :: mach_inf, pres_rat, dx, dt, cfl
-      double precision, dimension(0:N+1) :: S, Sx, 
+      double precision, dimension(:), allocatable :: S, Sx, xpos, 
      &          pres, u1, u2, u5 
-      double precision, dimension(-1:N+1) :: xpos
 
 
 
@@ -21,6 +18,7 @@
       mach_inf = 0.3d0
       pres_rat = 0.8d0
       cfl = 0.9d0
+      N = 1000
       tmax = 100000
 
 
@@ -28,13 +26,13 @@
 ! allocate sizes for arrays 
 !-----------------------------------------------------------------------
 
-!      allocate(S(0:N+1))
-!      allocate(Sx(0:N+1))
-!      allocate(xpos(-1:N+1))
-!      allocate(pres(0:N+1))
-!      allocate(u1(0:N+1))
-!      allocate(u2(0:N+1))
-!      allocate(u5(0:N+1))
+      allocate(S(0:N+1))
+      allocate(Sx(0:N+1))
+      allocate(xpos(-1:N+1))
+      allocate(pres(0:N+1))
+      allocate(u1(0:N+1))
+      allocate(u2(0:N+1))
+      allocate(u5(0:N+1))
 
 
 
@@ -74,6 +72,7 @@
 
       call jcost(N, J, pres, dx)
 
+      print*, J
 
 
 
