@@ -15,6 +15,7 @@ git add README.md
 git add .gitignore
 git add ./frances
 git add ./ernie
+git add ./harold
 
 # rest of the sync commands
 
