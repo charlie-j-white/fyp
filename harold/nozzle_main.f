@@ -8,8 +8,9 @@
 !
       IMPLICIT NONE
 !
-      INTEGER:: i,ni,nt,nstages,maxit,ns
-      DOUBLE PRECISION:: J,jd,arearat
+      INTEGER:: i,ni,nt,nstages,maxit,ns,INFO
+      INTEGER, DIMENSION(3,3):: IPIV
+      DOUBLE PRECISION:: J,jd,arearat,djda,ans
       DOUBLE PRECISION, DIMENSION(-1:ni+1):: 
      &             x,ur,um,ue,pres,ds,dx,res1,res2,res3,
      &             error1,error2,error3,dt,area,dadx,ur0,um0,ue0,
@@ -17,6 +18,9 @@
      &             res1d,res2d,res3d
       DOUBLE PRECISION, DIMENSION(0:6):: alp
       DOUBLE PRECISION, DIMENSION(1:3):: djdu
+      DOUBLE PRECISION, DIMENSION(1,3):: adjoint
+      DOUBLE PRECISION, DIMENSION(3,3):: fluxjac
+      DOUBLE PRECISION, DIMENSION(-1:ni+1,3):: dRda,dRd1,dRd2,dRd3
       DOUBLE PRECISION:: CFL,pmachin,prat,pk,cflscale
       DOUBLE PRECISION:: rms,rms1,rms2,rms3,restol,resmax
 !
@@ -148,77 +152,124 @@ cc        print*,i,rms
 !----------------------------------------------------------------------
 !                     A D J O I N T      C O D E 
 !----------------------------------------------------------------------
-
       print*, "    "
       print*, "    "
       print*, "----------Adjoint code----------"
-      ! primal output of cost function
-      call cost(J,arearat,ur,um,ue,ni)
-      print*, "   J = ", J
 
-      ! create seed vectors
+
+
+
+!     debugging statements      
+      i = 110
+      print*, "     "
+      print*, "u = ", ur(i),um(i),ue(i)
+      print*, "R = ", res1(i),res2(i),res3(i)
+
+
+
+
+!     primal output of cost function
+!----------------------------------------------------------------------
+      call cost(J,arearat,ur,um,ue,ni)
+
+!     create seed vectors
       do i=-1,ni+1
          vec0(i)=0.0d0
          vec1(i)=1.0d0
       end do
 
-      ! get dJ/da
-!     call cost_d(j,jd,arearat,arearatd,ur,urd,um,umd,ue,ued,ni)
+!     get dJ/da
       call cost_d(j,jd,arearat,1.0d0,ur,vec0,um,vec0,ue,vec0,ni)
-      print*, "djda = ", jd
+      djda = jd
 
-      ! get dJ/du
+!     get dJ/du
       call cost_d(j,jd,arearat,0.0d0,ur,vec1,um,vec0,ue,vec0,ni)
       djdu(1) = jd
       call cost_d(j,jd,arearat,0.0d0,ur,vec0,um,vec1,ue,vec0,ni)
       djdu(2) = jd
       call cost_d(j,jd,arearat,0.0d0,ur,vec0,um,vec0,ue,vec1,ni)
       djdu(3) = jd
-      print*, "djdu = ", djdu
 
 
 
 
-      i = 800;
-      ! primal output of adapted residual function
+
+
+
+      i = 110;
+!     primal output of adapted residual function
+!----------------------------------------------------------------------
       call jRES(ni,ur,um,ue,pk,res1,res2,res3,arearat)
 
-      ! calculate derivatives relative to the residual
-!      call JRES_D(ni,ur,urd,um,umd,ue,ued,pk,
-!     &           res1,res1d,res2,res2d,res3,res3d,arearat,arearatd)
+!     debugging statements      
+      print*, "     "
+      i = 110
+      print*, "u = ", ur(i),um(i),ue(i)
+      print*, "R = ", res1(i),res2(i),res3(i)
+
+
+!     get dRda
       call JRES_D(ni,ur,vec0,um,vec0,ue,vec0,pk,
      &           res1,res1d,res2,res2d,res3,res3d,arearat,1.0d0)
-      print*, "    "
-      print*, "dRda = ", res1d(i), res2d(i), res3d(i)
-      
+      dRda(:,1) = res1d
+      dRda(:,2) = res2d
+      dRda(:,3) = res3d
+     
+
+!     get dRdu
       call JRES_D(ni,ur,vec1,um,vec0,ue,vec0,pk,
      &           res1,res1d,res2,res2d,res3,res3d,arearat,0.0d0)
-      print*, "dRdu = ", res1d(i), res2d(i), res3d(i)
+      dRd1(:,1) = res1d
+      dRd1(:,2) = res2d
+      dRd1(:,3) = res3d
+     
       call JRES_D(ni,ur,vec0,um,vec1,ue,vec0,pk,
      &           res1,res1d,res2,res2d,res3,res3d,arearat,0.0d0)
-      print*, "       ", res1d(i), res2d(i), res3d(i)
+      dRd2(:,1) = res1d
+      dRd2(:,2) = res2d
+      dRd2(:,3) = res3d
+     
       call JRES_D(ni,ur,vec0,um,vec0,ue,vec1,pk,
      &           res1,res1d,res2,res2d,res3,res3d,arearat,0.0d0)
-      print*, "       ", res1d(i), res2d(i), res3d(i)
+      dRd3(:,1) = res1d
+      dRd3(:,2) = res2d
+      dRd3(:,3) = res3d
+     
 
 
+!     solve adjoint equation for adjoint vector 
+!----------------------------------------------------------------------
 
+      ans = 0.0d0
+      do i=1,ni
 
-      ! solve adjoint equation for adjoint vector 
+      adjoint(1,1) = dJdu(1)
+      adjoint(1,2) = dJdu(2)
+      adjoint(1,3) = dJdu(3)
+      
+      fluxjac(1,1) = dRd1(i,1)
+      fluxjac(2,1) = dRd1(i,2)
+      fluxjac(3,1) = dRd1(i,3)
+      fluxjac(1,2) = dRd2(i,1)
+      fluxjac(2,2) = dRd2(i,2)
+      fluxjac(3,2) = dRd2(i,3)
+      fluxjac(1,3) = dRd3(i,1)
+      fluxjac(2,3) = dRd3(i,2)
+      fluxjac(3,3) = dRd3(i,3)
 
+      call DGETRF(3,3,fluxjac,3,IPIV,INFO)
+      call DGETRS('N',3,1,fluxjac,3,IPIV,adjoint,3,INFO)
 
+      ans = ans -(adjoint(1,1)*dRda(i,1) + 
+     &   adjoint(1,2)*dRda(i,2)  + adjoint(1,3)*dRda(i,3) -djda)
 
+      print*, i, -(adjoint(1,1)*dRda(i,1) + 
+     &   adjoint(1,2)*dRda(i,2)  + adjoint(1,3)*dRda(i,3) -djda)
 
+      end do
 
-
-      ! form total product to compare with finite difference
+      print*, ans/ni
       print*, "    "
-      print*, "DJDa = "
-
-
-
-
-
 
 
 

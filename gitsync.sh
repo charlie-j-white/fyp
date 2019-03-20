@@ -16,6 +16,7 @@ git add .gitignore
 git add ./frances
 git add ./ernie
 git add ./harold
+git add ./ivan
 
 # rest of the sync commands
 
