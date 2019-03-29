@@ -17,6 +17,7 @@ git add ./frances
 git add ./ernie
 git add ./harold
 git add ./ivan
+git add ./james
 
 # rest of the sync commands
 

@@ -4,8 +4,22 @@ I've put relevant sections of my final year project on Github for several reason
 
 ## ernie
 
-This solves a quasi-1D system of Euler equations using a MacCormack predictor-corrector solver, written in Fortran. Output 'solution.plt' is ASCII text, formatted for Tecplot. At the time of writing, I'm not sure it actually works.
+This solves a quasi-1D system of Euler equations using a MacCormack predictor-corrector solver, written in Fortran. Output 'solution.plt' is ASCII text, formatted for Tecplot.
 
 ## frances
 
-This directory contains the first results of the automatic differentiation process, done with Tapenade engine. 
+This directory acts a testing box for functions.
+
+## harold
+
+Beta version of full adjoint code.
+
+## ivan
+
+First full working adjoint code. This outputs the sensitivity a pressure integral with respect to the duct throat ratio.
+
+## james
+
+Development of a 2D JST scheme for a nozzle.
+
+

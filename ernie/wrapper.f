@@ -10,6 +10,7 @@
       call main(area_rat, J, N)
       print*, J
 
+      stop
 
 
       ! FINITE DIFFERENCE

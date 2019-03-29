@@ -21,7 +21,7 @@ pres = column(solution, 4)
 
 # plot stuff
 plt.title('flow in a duct')
-plt.plot(X,u1, '-')
+plt.plot(X,u5, '-')
 plt.show()
 
 
