@@ -7,16 +7,16 @@
 !
 !
       integer :: nx,ny,na,nl,np
-      integer :: i,j,tmax
+      integer :: i,j,tmax,ii
 !
-      double precision :: dt,rmsmax
+      double precision :: dtmax,rmsmax
 !
       double precision, dimension(1,na) :: alpha
       double precision, dimension(1,np) :: params
       double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)) ::
      & flow,flow0,residual
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) ::
-     & u1,u2,u3,u5,r1,r2,r3,r5
+     & u1,u2,u3,u5,r1,r2,r3,r5,dt
       double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) ::
      & meshX,meshY
 !
@@ -61,20 +61,22 @@
 !       -1  *------*------*------*------*------*------*------*------*
 !          -1      0      1                         Nx-1    Nx    Nx+1        
 !
-!
 !     And so begins the main function:
 !
-!      call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
-!      call split_rev(nx,ny,nl,flow,u1,u2,u3,u5)
 !
-      print*, "START PROGRAM main(...)"
-      print*, "  "
+!
+!
+!
+!
 !
 !
 !
 !
 !     start meshing and initialisation processes
 !-----------------------------------------------------------------------
+!
+      print*, "START PROGRAM main(...)"
+      print*, "  "
 !
       call meshing(nx,ny,na,nl,alpha,meshX,meshY)
 !
@@ -93,16 +95,16 @@
 !-----------------------------------------------------------------------
 !
       rmsmax = -10.0d0
-      tmax = 1
+      tmax = INT(params(1,5))
       do i = 1,tmax
 !
-      call timestep(nx,ny,nl,flow,flow0,dt,i,rmsmax)
+      call timestep(nx,ny,nl,flow,np,params,meshX,meshY,dt)
 !
       do j = 1,4*(nx+2*nl)*(ny+2*nl)
       flow0(1,j) = flow(1,j)
       end do
 !
-      call resid(nx,ny,nl,flow,residual,np,params,meshX,meshY)
+      call resid(nx,ny,nl,flow,residual,np,params,meshX,meshY,dt)
 !
       call update(nx,ny,nl,flow,residual,np,params,meshX,meshY,dt)
 !
@@ -113,20 +115,26 @@
 !
 !
 !
-!
 !     end of main calcs, debugging and post-processing
 !-----------------------------------------------------------------------
 !
-      call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
-!
+!      call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
 !      call debug_cell(nx,ny,nl,u1)
 !      call debug_cell(nx,ny,nl,u2)
 !      call debug_cell(nx,ny,nl,u3)
 !      call debug_cell(nx,ny,nl,u5)
+!!
+!      call split_fwd(nx,ny,nl,residual,r1,r2,r3,r5)
+!      call debug_cell(nx,ny,nl,r1)
+!      call debug_cell(nx,ny,nl,r2)
+!      call debug_cell(nx,ny,nl,r3)
+!      call debug_cell(nx,ny,nl,r5)
+!
+!      call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
+!      call split_rev(nx,ny,nl,flow,u1,u2,u3,u5)
+!
 !
       call postprocess(nx,ny,nl,flow,u1,u2,u3,u5,meshX,meshY)
-!
-!
 !
 !
 !

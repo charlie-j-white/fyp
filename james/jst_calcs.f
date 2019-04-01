@@ -3,9 +3,19 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
-      subroutine jst_calcs(nx,ny,nl,pres,u1,u2,u3,u5)
-      integer :: nx,ny,nl
+      subroutine jst_calcs(nx,ny,nl,dt,da,area1,area0,
+     &                    u12,u11,u10,u1i,
+     &                    u22,u21,u20,u2i,
+     &                    u32,u31,u30,u3i,
+     &                    u52,u51,u50,u5i
+     & )
+!
+!
+!
+!
+!
       integer :: i,j
+      integer :: nx,ny,nl
       double precision, dimension(4) :: da
       double precision :: u12,u11,u10,u1i,
      &                    u22,u21,u20,u2i,
@@ -47,6 +57,18 @@
       da(2) = (h/dt)*( E2*(u21-u20) - E4*(u22-3.0d0*u21+3.0d0*u20-u2i) )
       da(3) = (h/dt)*( E2*(u31-u30) - E4*(u32-3.0d0*u31+3.0d0*u30-u3i) )
       da(4) = (h/dt)*( E2*(u51-u50) - E4*(u52-3.0d0*u51+3.0d0*u50-u5i) )
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
 !
 !
 !

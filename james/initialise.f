@@ -82,19 +82,6 @@
 !
 !
 !
-!
-!
-!
-!
-!
-!
-!
-!
-!
-!
-!
-!
-!
 !     COMBINE the local functions u1 u2 u3 u5 into a single one, flow
 !
       call split_rev(nx,ny,nl,flow,u1,u2,u3,u5)

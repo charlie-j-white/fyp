@@ -15,10 +15,10 @@
 !
 !
       Lx = 1.0d0
-      Ly = 1.0d0
+      Ly = 0.4d0
       AR = alpha(1,1)
       PS = alpha(1,2)
-      pi = 3.141592d0
+      pi = 3.1415926535897932d0
 !
 !
       do j = 0-nl,ny+nl

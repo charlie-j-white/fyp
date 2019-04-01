@@ -3,15 +3,14 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
-      subroutine update(nx,ny,nl,flow,residual,np,params,meshX,meshY,
-     & dt)
+      subroutine timestep(nx,ny,nl,flow,np,params,meshX,meshY,dt)
 !
 !
       integer :: nx,ny,nl,np
       integer :: i,j,imax
 !
       double precision :: gam,CFL,vx,vy,dx,dy,dtmax,SoS,vabs,
-     & vxm,vym,dxm,dym
+     & vxm,vym,dxm,dym,k
 !
       double precision, dimension(1,np) :: params
       double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)) :: 
@@ -30,34 +29,35 @@
       CFL = params(1,4)
       dtmax = 10000.00000d0
 !
+      k = 1.0d0
 !
 !
 !
 !
       call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
-      call split_fwd(nx,ny,nl,residual,r1,r2,r3,r5)
+!
+      call pressure(nx,ny,nl,pres,u1,u2,u3,u5)
 !
 !
 !
-!
-!
-!
-!
-!
-!
-!     do the actual update procedure using first order Euler time
-!     integration
+!     compute timestep: SoS, local speed and local time
 !
       do j = 1,ny
       do i = 1,nx
 !
+      SoS = DSQRT(gam*pres(i,j)/u1(i,j))
+      vx = DABS(u2(i,j)/u1(i,j)) +SoS
+      vy = DABS(u3(i,j)/u1(i,j)) +SoS
 !
-      u1(i,j) = u1(i,j) - dt(i,j)*r1(i,j)
-      u2(i,j) = u2(i,j) - dt(i,j)*r2(i,j)
-      u3(i,j) = u3(i,j) - dt(i,j)*r3(i,j)
-      u5(i,j) = u5(i,j) - dt(i,j)*r5(i,j)
+      dx = DMAX1(DABS(meshX(i,j) - meshX(i-1,j)),
+     &           DABS(meshX(i-1,j) - meshX(i-2,j)))
+      dx = DMAX1(DABS(meshX(i+1,j) - meshX(i,j)), dx)*k
+      dy = DMAX1(DABS(meshY(i,j) - meshY(i,j-1)),
+     &           DABS(meshY(i,j-1) - meshY(i,j-2)))
+      dy = DMAX1(DABS(meshY(i,j+1) - meshY(i,j)), dy)*k
 !
-!
+      dt(i,j) = CFL/(vx/dx + vy/dy)
+!      
       end do
       end do
 !
@@ -65,13 +65,7 @@
 !
 !
 !
-!   
 !
 !
 !
-      call split_rev(nx,ny,nl,flow,u1,u2,u3,u5)
-!
-!
-!
-!
-      end subroutine update
+      end subroutine timestep

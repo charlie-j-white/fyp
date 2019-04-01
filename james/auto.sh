@@ -3,4 +3,4 @@
 
 make
 ./main
-python display.py
+python display.py &

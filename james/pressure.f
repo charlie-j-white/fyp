@@ -7,7 +7,9 @@
       integer :: nx,ny,nl
       integer :: i,j
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
-     &         u1,u2,u3,u5,pres
+     &         pres
+      double precision, dimension(1-nl:nx+nl,1-nl:ny+nl), intent(in) :: 
+     &         u1,u2,u3,u5
       double precision :: ga1
 !
 !

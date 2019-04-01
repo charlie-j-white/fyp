@@ -3,7 +3,7 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
-      subroutine resid(nx,ny,nl,flow,residual,np,params,meshX,meshY)
+      subroutine resid(nx,ny,nl,flow,residual,np,params,meshX,meshY,dt)
 !
 !
       integer :: nx,ny,nl,np
@@ -11,6 +11,7 @@
 !
       double precision :: Minf,Prat,gam,Pinf,Pout,Ptot,rinf,rout
       double precision :: xa,xb,xc,xd,ya,yb,yc,yd,area
+      double precision :: pi
 !
       double precision, dimension(1,np) :: params
       double precision, dimension(4) ::
@@ -23,7 +24,7 @@
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
      &         u1,u2,u3,u5,pres,
      &         r1,r2,r3,r5,
-     &         volume
+     &         volume,volume2,dt
 !
 !
 !
@@ -91,10 +92,16 @@
 !
 !
 !
+!
+!
+!
+!
+!
 !   
 !     apply boundary conditions and calculate pressure field
 !
       call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
+      call split_fwd(nx,ny,nl,residual,r1,r2,r3,r5)
 !
       call boundaries(nx,ny,nl,np,params,u1,u2,u3,u5,meshX,meshY)
 !
@@ -111,8 +118,11 @@
 !
 !     calculate cell area
 !
+      pi = 3.1415926535897932d0
+!
       do j = 1-nl,ny+nl
       do i = 1-nl,nx+nl
+!
 !
       xa = meshX(i,j) - meshX(i,j-1)
       xb = meshX(i-1,j) - meshX(i,j)
@@ -123,10 +133,23 @@
       yc = meshY(i-1,j-1) - meshY(i-1,j)
       yd = meshY(i,j-1) - meshY(i-1,j-1)
 !
+!
+!
       volume(i,j) = 0.5d0*DABS(xa*yb-xb*ya) + 0.5d0*DABS(xc*yd-xd*yc)
+!
 !
       end do
       end do
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
 !
 !
 !
@@ -155,6 +178,15 @@
       yd = meshY(i,j-1) - meshY(i-1,j-1)
 !
       area = volume(i,j) 
+!
+!      print*, 
+!     & 180.0d0*DATAN2(xa,-ya)/pi,
+!     & 180.0d0*DATAN2(xb,-yb)/pi,
+!     & 180.0d0*DATAN2(xc,-yc)/pi,
+!     & 180.0d0*DATAN2(xd,-yd)/pi
+!
+!
+!
 !
 !
 !
@@ -198,7 +230,45 @@
 !
 !     do JST stuff
 !
-!      call jst_calcs(nx,ny,nl,pres,u1,u2,u3,u5)
+      call jst_calcs(nx,ny,nl,dt(i,j),
+     & da,volume(i+1,j),volume(i,j),
+     & u1(i+2,j),u1(i+1,j),u1(i,j),u1(i-1,j),
+     & u2(i+2,j),u2(i+1,j),u2(i,j),u2(i-1,j),
+     & u3(i+2,j),u3(i+1,j),u3(i,j),u3(i-1,j),
+     & u5(i+2,j),u5(i+1,j),u5(i,j),u5(i-1,j)
+     & )
+!
+      call jst_calcs(nx,ny,nl,dt(i,j),
+     & db,volume(i,j+1),volume(i,j),
+     & u1(i,j+2),u1(i,j+1),u1(i,j),u1(i,j-1),
+     & u2(i,j+2),u2(i,j+1),u2(i,j),u2(i,j-1),
+     & u3(i,j+2),u3(i,j+1),u3(i,j),u3(i,j-1),
+     & u5(i,j+2),u5(i,j+1),u5(i,j),u5(i,j-1)
+     & )
+!
+      call jst_calcs(nx,ny,nl,dt(i,j),
+     & dc,volume(i,j),volume(i-1,j),
+     & u1(i+1,j),u1(i,j),u1(i-1,j),u1(i-2,j),
+     & u2(i+1,j),u2(i,j),u2(i-1,j),u2(i-2,j),
+     & u3(i+1,j),u3(i,j),u3(i-1,j),u3(i-2,j),
+     & u5(i+1,j),u5(i,j),u5(i-1,j),u5(i-2,j)
+     & )
+!
+!
+      call jst_calcs(nx,ny,nl,dt(i,j),
+     & dd,volume(i,j),volume(i,j-1),
+     & u1(i,j+1),u1(i,j),u1(i,j-1),u1(i,j-2),
+     & u2(i,j+1),u2(i,j),u2(i,j-1),u2(i,j-2),
+     & u3(i,j+1),u3(i,j),u3(i,j-1),u3(i,j-2),
+     & u5(i,j+1),u5(i,j),u5(i,j-1),u5(i,j-2)
+     & )
+!
+!
+!
+!
+!
+!
+!
 !
 !
 !
@@ -210,22 +280,37 @@
       r1(i,j) = (ga(1)*xa-fa(1)*ya+
      &           gb(1)*xb-fb(1)*yb+
      &           gc(1)*xc-fc(1)*yc+
-     &           gd(1)*xd-fd(1)*yd)/area
+     &           gd(1)*xd-fd(1)*yd
+     & )/area -
+     &  (-da(1) -db(1) + dc(1) + dd(1))
 !
       r2(i,j) = (ga(2)*xa-fa(2)*ya+
      &           gb(2)*xb-fb(2)*yb+
      &           gc(2)*xc-fc(2)*yc+
-     &           gd(2)*xd-fd(2)*yd)/area
+     &           gd(2)*xd-fd(2)*yd
+     & )/area -
+     &  (-da(2) -db(2) + dc(2) + dd(2))
 !
       r3(i,j) = (ga(3)*xa-fa(3)*ya+
      &           gb(3)*xb-fb(3)*yb+
      &           gc(3)*xc-fc(3)*yc+
-     &           gd(3)*xd-fd(3)*yd)/area
+     &           gd(3)*xd-fd(3)*yd
+     & )/area -
+     &  (-da(3) -db(3) + dc(3) + dd(3))
 !
       r5(i,j) = (ga(4)*xa-fa(4)*ya+
      &           gb(4)*xb-fb(4)*yb+
      &           gc(4)*xc-fc(4)*yc+
-     &           gd(4)*xd-fd(4)*yd)/area
+     &           gd(4)*xd-fd(4)*yd
+     & )/area -
+     &  (-da(4) -db(4) + dc(4) + dd(4))
+!
+!
+!
+!
+!
+!
+!
 !
 !
 !
@@ -233,11 +318,15 @@
       end do
       end do
 !
+!
+!      call debug_cell(nx,ny,nl,r1)
+!      call debug_cell(nx,ny,nl,r2)
+!      call debug_cell(nx,ny,nl,r3)
+!      call debug_cell(nx,ny,nl,r5)
 !
 !
 !
       call split_rev(nx,ny,nl,flow,u1,u2,u3,u5)
-!
       call split_rev(nx,ny,nl,residual,r1,r2,r3,r5)
 !
 !

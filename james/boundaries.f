@@ -46,7 +46,7 @@
       do i = 1,ny
       uint(i) = u2(1,i)/u1(1,i)
       Mp2(i) = (uint(i)**2.0d0)/
-     & (ga1*(1.0d0/ga1 + 0.5d0*Minf**2.0d0-0.5d0*uint(i)**2))
+     & (ga1*(1.0d0/ga1 + 0.5d0*Minf**2.0d0-0.5d0*uint(i)**2.0d0))
       Pbc(i) = Pstag/(1.0d0+0.5d0*ga1*Mp2(i))**(gam/ga1)
       rbc(i) = rstag/(1.0d0+0.5d0*ga1*Mp2(i))**(1.0d0/ga1)
       end do
@@ -82,7 +82,7 @@
       u1(nx+j,i) = u1(nx,i)
       u2(nx+j,i) = u2(nx,i)
       u3(nx+j,i) = 0.0d0
-      u5(nx+j,i) = Pext/ga1 + 0.5d0*(u2(nx,i)**2)/u1(nx,i)
+      u5(nx+j,i) = Pext/ga1 + 0.5d0*(u2(nx,i)**2.0d0)/u1(nx,i)
       end do
       end do
 !
