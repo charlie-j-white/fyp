@@ -18,6 +18,7 @@ git add ./ernie
 git add ./harold
 git add ./ivan
 git add ./james
+git add ./james/OBJ
 
 # rest of the sync commands
 
