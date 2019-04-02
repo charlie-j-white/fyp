@@ -7,9 +7,9 @@
 !
 !
       integer :: nx,ny,na,nl,np
-      integer :: i,j,tmax,ii
+      integer :: i,j,tmax
 !
-      double precision :: dtmax,rmsmax
+      double precision :: rmsmax
 !
       double precision, dimension(1,na) :: alpha
       double precision, dimension(1,np) :: params
@@ -75,8 +75,13 @@
 !     start meshing and initialisation processes
 !-----------------------------------------------------------------------
 !
-      print*, "START PROGRAM main(...)"
+      print*, "START PROGRAM 'main'"
       print*, "  "
+!
+      do j = 1,4*(nx+2*nl)*(ny+2*nl)
+      flow(1,j) = 0.0d0
+      residual(1,j) = 0.0d0
+      end do
 !
       call meshing(nx,ny,na,nl,alpha,meshX,meshY)
 !
@@ -106,7 +111,7 @@
 !
       call resid(nx,ny,nl,flow,residual,np,params,meshX,meshY,dt)
 !
-      call update(nx,ny,nl,flow,residual,np,params,meshX,meshY,dt)
+      call update(nx,ny,nl,flow,residual,np,params,dt,flow0)
 !
       call itinfo(nx,ny,nl,flow,flow0,dt,i,rmsmax)
 !
@@ -141,6 +146,8 @@
 !
 !
 !
+      print*, "  "
+      print*, "END PROGRAM 'main'"
 !
       end subroutine main
 !-----------------------------------------------------------------------

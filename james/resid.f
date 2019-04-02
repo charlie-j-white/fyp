@@ -7,9 +7,8 @@
 !
 !
       integer :: nx,ny,nl,np
-      integer :: i,j,R
+      integer :: i,j
 !
-      double precision :: Minf,Prat,gam,Pinf,Pout,Ptot,rinf,rout
       double precision :: xa,xb,xc,xd,ya,yb,yc,yd,area
       double precision :: pi
 !
@@ -22,9 +21,9 @@
       double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) :: 
      &         meshX,meshY
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
-     &         u1,u2,u3,u5,pres,
+     &         u1,u2,u3,u5,
      &         r1,r2,r3,r5,
-     &         volume,volume2,dt
+     &         volume,dt
 !
 !
 !
@@ -52,8 +51,8 @@
 !                             xA
 !              .__________.<____.    
 !     y|        \     B    \    ^  
-!      |         \          \   |                        xA   0    -yA
-!      |          \C        A\  |yA     n.dS = A X k  =  yA X 0  =  xA 
+!      |         \          \   |                        xA   0     yA
+!      |          \C        A\  |yA     n.dS = A X k  =  yA X 0  = -xA 
 !      |_____      \          \ |                         0   1      0
 !           x       \____D_____\|
 !
@@ -105,7 +104,7 @@
 !
       call boundaries(nx,ny,nl,np,params,u1,u2,u3,u5,meshX,meshY)
 !
-      call pressure(nx,ny,nl,pres,u1,u2,u3,u5)
+!      call pressure(nx,ny,nl,pres,u1,u2,u3,u5)
 !
       do i = 1,4
       da(i) = 0.0d0
@@ -168,22 +167,24 @@
 !
 !     calculate geometric information
 !
-      xa = meshX(i,j) - meshX(i,j-1)
-      xb = meshX(i-1,j) - meshX(i,j)
-      xc = meshX(i-1,j-1) - meshX(i-1,j)
-      xd = meshX(i,j-1) - meshX(i-1,j-1)
-      ya = meshY(i,j) - meshY(i,j-1)
-      yb = meshY(i-1,j) - meshY(i,j)
-      yc = meshY(i-1,j-1) - meshY(i-1,j)
-      yd = meshY(i,j-1) - meshY(i-1,j-1)
+      xa = (meshX(i,j) - meshX(i,j-1))
+      xb = (meshX(i-1,j) - meshX(i,j))
+      xc = (meshX(i-1,j-1) - meshX(i-1,j))
+      xd = (meshX(i,j-1) - meshX(i-1,j-1))
+      ya = (meshY(i,j) - meshY(i,j-1))
+      yb = (meshY(i-1,j) - meshY(i,j))
+      yc = (meshY(i-1,j-1) - meshY(i-1,j))
+      yd = (meshY(i,j-1) - meshY(i-1,j-1))
 !
       area = volume(i,j) 
 !
+!      print*
+!      print*, xa,xb,xc,xd,ya,yb,yc,yd
 !      print*, 
-!     & 180.0d0*DATAN2(xa,-ya)/pi,
-!     & 180.0d0*DATAN2(xb,-yb)/pi,
-!     & 180.0d0*DATAN2(xc,-yc)/pi,
-!     & 180.0d0*DATAN2(xd,-yd)/pi
+!     & 180.0d0*DATAN2(-xa,ya)/pi,
+!     & 180.0d0*DATAN2(-xb,yb)/pi,
+!     & 180.0d0*DATAN2(-xc,yc)/pi,
+!     & 180.0d0*DATAN2(-xd,yd)/pi
 !
 !
 !
@@ -197,32 +198,28 @@
      & 0.5d0*(u1(i+1,j)+u1(i,j)),
      & 0.5d0*(u2(i+1,j)+u2(i,j)),
      & 0.5d0*(u3(i+1,j)+u3(i,j)),
-     & 0.5d0*(u5(i+1,j)+u5(i,j)),
-     & 0.5d0*(pres(i+1,j)+pres(i,j)))
+     & 0.5d0*(u5(i+1,j)+u5(i,j)))
 !
 !     B face: i     , j+1/2
       call fg_vector(fb,gb,
      & 0.5d0*(u1(i,j+1)+u1(i,j)),
      & 0.5d0*(u2(i,j+1)+u2(i,j)),
      & 0.5d0*(u3(i,j+1)+u3(i,j)),
-     & 0.5d0*(u5(i,j+1)+u5(i,j)),
-     & 0.5d0*(pres(i,j+1)+pres(i,j)))
+     & 0.5d0*(u5(i,j+1)+u5(i,j)))
 !
 !     C face: i-1/2 , j
       call fg_vector(fc,gc,
      & 0.5d0*(u1(i-1,j)+u1(i,j)),
      & 0.5d0*(u2(i-1,j)+u2(i,j)),
      & 0.5d0*(u3(i-1,j)+u3(i,j)),
-     & 0.5d0*(u5(i-1,j)+u5(i,j)),
-     & 0.5d0*(pres(i-1,j)+pres(i,j)))
+     & 0.5d0*(u5(i-1,j)+u5(i,j)))
 !
 !     D face: i     , j-1/2
       call fg_vector(fd,gd,
      & 0.5d0*(u1(i,j-1)+u1(i,j)),
      & 0.5d0*(u2(i,j-1)+u2(i,j)),
      & 0.5d0*(u3(i,j-1)+u3(i,j)),
-     & 0.5d0*(u5(i,j-1)+u5(i,j)),
-     & 0.5d0*(pres(i,j-1)+pres(i,j)))
+     & 0.5d0*(u5(i,j-1)+u5(i,j)))
 !
 !
 !
@@ -230,7 +227,7 @@
 !
 !     do JST stuff
 !
-      call jst_calcs(nx,ny,nl,dt(i,j),
+      call jst_calcs(dt(i,j),np,params,
      & da,volume(i+1,j),volume(i,j),
      & u1(i+2,j),u1(i+1,j),u1(i,j),u1(i-1,j),
      & u2(i+2,j),u2(i+1,j),u2(i,j),u2(i-1,j),
@@ -238,7 +235,7 @@
      & u5(i+2,j),u5(i+1,j),u5(i,j),u5(i-1,j)
      & )
 !
-      call jst_calcs(nx,ny,nl,dt(i,j),
+      call jst_calcs(dt(i,j),np,params,
      & db,volume(i,j+1),volume(i,j),
      & u1(i,j+2),u1(i,j+1),u1(i,j),u1(i,j-1),
      & u2(i,j+2),u2(i,j+1),u2(i,j),u2(i,j-1),
@@ -246,7 +243,7 @@
      & u5(i,j+2),u5(i,j+1),u5(i,j),u5(i,j-1)
      & )
 !
-      call jst_calcs(nx,ny,nl,dt(i,j),
+      call jst_calcs(dt(i,j),np,params,
      & dc,volume(i,j),volume(i-1,j),
      & u1(i+1,j),u1(i,j),u1(i-1,j),u1(i-2,j),
      & u2(i+1,j),u2(i,j),u2(i-1,j),u2(i-2,j),
@@ -255,7 +252,7 @@
      & )
 !
 !
-      call jst_calcs(nx,ny,nl,dt(i,j),
+      call jst_calcs(dt(i,j),np,params,
      & dd,volume(i,j),volume(i,j-1),
      & u1(i,j+1),u1(i,j),u1(i,j-1),u1(i,j-2),
      & u2(i,j+1),u2(i,j),u2(i,j-1),u2(i,j-2),
@@ -264,6 +261,7 @@
      & )
 !
 !
+!      print*, dt(i,j)
 !
 !
 !
@@ -274,38 +272,42 @@
 !
 !
 !
-!     calculate residual for specific cell; add dissipative terms to
-!     original finite volume scheme
+!     calculate residual for specific cell; subtract dissipation terms
+!     from original FV section
 !
-      r1(i,j) = (ga(1)*xa-fa(1)*ya+
-     &           gb(1)*xb-fb(1)*yb+
-     &           gc(1)*xc-fc(1)*yc+
-     &           gd(1)*xd-fd(1)*yd
-     & )/area -
-     &  (-da(1) -db(1) + dc(1) + dd(1))
+      r1(i,j) = (-ga(1)*xa + fa(1)*ya
+     &           -gb(1)*xb + fb(1)*yb
+     &           -gc(1)*xc + fc(1)*yc
+     &           -gd(1)*xd + fd(1)*yd
+     & - (da(1) + db(1) - dc(1) - dd(1))
+     & )/area 
 !
-      r2(i,j) = (ga(2)*xa-fa(2)*ya+
-     &           gb(2)*xb-fb(2)*yb+
-     &           gc(2)*xc-fc(2)*yc+
-     &           gd(2)*xd-fd(2)*yd
-     & )/area -
-     &  (-da(2) -db(2) + dc(2) + dd(2))
+      r2(i,j) = (-ga(2)*xa + fa(2)*ya
+     &           -gb(2)*xb + fb(2)*yb
+     &           -gc(2)*xc + fc(2)*yc
+     &           -gd(2)*xd + fd(2)*yd
+     & - (da(2) + db(2) - dc(2) - dd(2))
+     & )/area 
 !
-      r3(i,j) = (ga(3)*xa-fa(3)*ya+
-     &           gb(3)*xb-fb(3)*yb+
-     &           gc(3)*xc-fc(3)*yc+
-     &           gd(3)*xd-fd(3)*yd
-     & )/area -
-     &  (-da(3) -db(3) + dc(3) + dd(3))
+      r3(i,j) = (-ga(3)*xa + fa(3)*ya
+     &           -gb(3)*xb + fb(3)*yb
+     &           -gc(3)*xc + fc(3)*yc
+     &           -gd(3)*xd + fd(3)*yd
+     & - (da(3) + db(3) - dc(3) - dd(3))
+     & )/area 
 !
-      r5(i,j) = (ga(4)*xa-fa(4)*ya+
-     &           gb(4)*xb-fb(4)*yb+
-     &           gc(4)*xc-fc(4)*yc+
-     &           gd(4)*xd-fd(4)*yd
-     & )/area -
-     &  (-da(4) -db(4) + dc(4) + dd(4))
+      r5(i,j) = (-ga(4)*xa + fa(4)*ya
+     &           -gb(4)*xb + fb(4)*yb
+     &           -gc(4)*xc + fc(4)*yc
+     &           -gd(4)*xd + fd(4)*yd
+     & - (da(4) + db(4) - dc(4) - dd(4))
+     & )/area 
 !
 !
+!      print*, r1(i,j), (da(1) + db(1) - dc(1) - dd(1))
+!      print*, r2(i,j), (da(2) + db(2) - dc(2) - dd(2))
+!      print*, r3(i,j), (da(3) + db(3) - dc(3) - dd(3))
+!      print*, r5(i,j), (da(4) + db(4) - dc(4) - dd(4))
 !
 !
 !
@@ -319,10 +321,7 @@
       end do
 !
 !
-!      call debug_cell(nx,ny,nl,r1)
-!      call debug_cell(nx,ny,nl,r2)
-!      call debug_cell(nx,ny,nl,r3)
-!      call debug_cell(nx,ny,nl,r5)
+!
 !
 !
 !

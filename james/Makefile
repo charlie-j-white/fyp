@@ -7,7 +7,7 @@
 # define compiler options
 FC =gfortran
 FLIBS =
-FFLAGS =-O3
+FFLAGS =-O3 -Wall
 
 
 # name which object files to use

@@ -5,7 +5,7 @@
 !    
       subroutine debug_cell(nx,ny,nl,u1)
       integer :: nx,ny,nl
-      integer :: i,j
+      integer :: j
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: u1
 !
 !

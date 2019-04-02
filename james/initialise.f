@@ -5,7 +5,7 @@
 !    
       subroutine initialise(nx,ny,nl,flow,np,params,meshX,meshY)
       integer :: nx,ny,nl,np
-      integer :: i,j,R
+      integer :: i,j
       double precision, dimension(1,np) :: params
       double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)) :: 
      &         flow
@@ -85,7 +85,6 @@
 !     COMBINE the local functions u1 u2 u3 u5 into a single one, flow
 !
       call split_rev(nx,ny,nl,flow,u1,u2,u3,u5)
-!
 !
 !
 !

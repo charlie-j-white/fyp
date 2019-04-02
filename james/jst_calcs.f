@@ -3,7 +3,7 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
-      subroutine jst_calcs(nx,ny,nl,dt,da,area1,area0,
+      subroutine jst_calcs(dt,np,params,da,area1,area0,
      &                    u12,u11,u10,u1i,
      &                    u22,u21,u20,u2i,
      &                    u32,u31,u30,u3i,
@@ -14,8 +14,8 @@
 !
 !
 !
-      integer :: i,j
-      integer :: nx,ny,nl
+      integer :: np
+      double precision, dimension(1,np) :: params
       double precision, dimension(4) :: da
       double precision :: u12,u11,u10,u1i,
      &                    u22,u21,u20,u2i,
@@ -31,8 +31,8 @@
 !
 !     define constants and pressure sensors
 !
-      K2 = 1/4.0d0
-      K4 = 1/256.0d0
+      K2 = params(1,6)
+      K4 = params(1,7)
 !
       p2 = 0.4d0*(u52-0.5d0*(u22**2.0d0+u32**2.0d0)/u12)
       p1 = 0.4d0*(u51-0.5d0*(u21**2.0d0+u31**2.0d0)/u11)
@@ -42,7 +42,7 @@
       v1 = DABS(p2-2.0d0*p1+p0)/(DABS(p2)+2.0D0*DABS(p1)+DABS(p0))
       v0 = DABS(p1-2.0d0*p0+pi)/(DABS(p1)+2.0D0*DABS(p0)+DABS(pi))
 !
-      E2 = K2*DMAX1(v1,v2)
+      E2 = K2*DMAX1(v1,v0)
       E4 = DMAX1(0.0d0,K4-E2)
 !
       h = 0.5d0*(area1+area0)

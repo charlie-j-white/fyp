@@ -26,6 +26,7 @@
       call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
       call split_fwd(nx,ny,nl,flow0,u10,u20,u30,u50)
 !
+      call pressure(nx,ny,nl,pres,u1,u2,u3,u5)
 !
 !
 !
@@ -70,7 +71,8 @@
 !
 !
 !
-      print*, it, DLOG10(rms/rmsmax), rms, rmsmax
+      print*, it, DLOG10(rms/rmsmax), rms, rmsmax,
+     & pres(nx+1,5)/pres(0,5)
 !
 !
 !   

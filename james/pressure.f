@@ -19,12 +19,12 @@
 !
       do j = 1-nl,ny+nl
       do i = 1-nl,nx+nl
-
-      if (u1(i,j).EQ.0.0d0) then
+!
+      if (u1(i,j).NE.0.0d0) then
       pres(i,j) = ga1*(u5(i,j) - 
      & 0.5d0*(u2(i,j)**2.0d0+u3(i,j)**2.0d0)/u1(i,j))
       end if
-
+!
       end do
       end do
 !

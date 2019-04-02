@@ -5,19 +5,19 @@
 !    
       subroutine boundaries(nx,ny,nl,np,params,u1,u2,u3,u5,meshX,meshY)
       integer :: nx,ny,nl,np
-      integer :: i,j,R
+      integer :: i,j
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
      &         u1,u2,u3,u5
       double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) :: 
      &         meshX,meshY
       double precision, dimension(1,np) :: 
      &         params 
-      double precision :: Minf,Prat,gam,ga1
+      double precision :: Minf,Prat,gam,ga1,
      &  Pinf,rinf,Pstag,rstag,
      &  Pext,
      &  k,Vw1,Vw2
       double precision, dimension(1:ny) :: 
-     &  Pbc,rbc,Mp2,uint
+     &  Pbc,rbc,Mp2,uint,Pext2
 !
 !
 !
@@ -49,6 +49,7 @@
      & (ga1*(1.0d0/ga1 + 0.5d0*Minf**2.0d0-0.5d0*uint(i)**2.0d0))
       Pbc(i) = Pstag/(1.0d0+0.5d0*ga1*Mp2(i))**(gam/ga1)
       rbc(i) = rstag/(1.0d0+0.5d0*ga1*Mp2(i))**(1.0d0/ga1)
+      Pext2(i) = Pbc(i)*prat
       end do
 !
       Pext = Pinf*prat
@@ -65,6 +66,7 @@
       u1(1-j,i) = rbc(i)
       u2(1-j,i) = rbc(i)*uint(i)
       u3(1-j,i) = 0.0d0
+!      u3(1-j,i) = u3(1,i)
       u5(1-j,i) = Pbc(i)/ga1 + 0.5d0*rbc(i)*uint(i)**2.0d0
       end do
       end do
@@ -82,6 +84,7 @@
       u1(nx+j,i) = u1(nx,i)
       u2(nx+j,i) = u2(nx,i)
       u3(nx+j,i) = 0.0d0
+!      u3(nx+j,i) = u3(nx,i)
       u5(nx+j,i) = Pext/ga1 + 0.5d0*(u2(nx,i)**2.0d0)/u1(nx,i)
       end do
       end do

@@ -4,16 +4,17 @@
 !**********************************************************************!
 !    
       subroutine postprocess(nx,ny,nl,flow,u1,u2,u3,u5,meshX,meshY)
-      integer :: nx,ny,nl,nh,nb
-      integer :: i,j,R
+      integer :: nx,ny,nl
+      integer :: i,j
       double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)) :: 
      &         flow
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
-     &         u1,u2,u3,u5,pres
+     &         u1,u2,u3,u5,pres,machloc
+      double precision, dimension(1-nl:nx+nl) :: 
+     &         volF
       double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) :: 
      &         meshX,meshY
       double precision :: gam
-!      double precision :: 
 !
 !
 !
@@ -28,11 +29,22 @@
       call pressure(nx,ny,nl,pres,u1,u2,u3,u5)
       gam = 1.4d0
 !
+!
       do i = 0,nx+1
+!
+      volF(i) = 0.0d0
+!
       do j = 1,ny
-      pres(i,j) = (gam-1.0d0)*
-     & (u5(i,j)-0.5d0*(u2(i,j)**2+u3(i,j)**2)/u1(i,j))
+!
+      machloc(i,j) = DSQRT((u2(i,j)**2.0d0+u3(i,j)**2.0d0)
+     &  /(gam*pres(i,j)*u1(i,j)))
+!
+      volF(i) = volF(i) + u2(i,j)
+!
       end do
+!
+      volF(i) = volF(i)/ny
+!
       end do
 !
 !
@@ -42,8 +54,8 @@
 !     write info to file
 !
       open(100, file='transect.plt')
-      write(100,*) 'VARIABLES = "x" "u1" "u2" "u3" "u5" "pres"'
-101   format(6f12.8)
+      write(100,*) 'VARIABLES = "x" "u1" "u2" "u3" "u5" "pres" "M"'
+101   format(7f12.8)
 !
 !
       j = nint((dfloat(ny)+1.0d0)/2.0d0)
@@ -53,9 +65,11 @@
      &                  meshX(i,j),
      &                  0.5d0*(u1(i,j)+u1(i+1,j)),
      &                  0.5d0*(u2(i,j)+u2(i+1,j)),
+!     &                  0.5d0*(volF(i)+volF(i+1)),
      &                  0.5d0*(u3(i,j)+u3(i+1,j)),
      &                  0.5d0*(u5(i,j)+u5(i+1,j)),
-     &                  0.5d0*(pres(i,j)+pres(i+1,j))
+     &                  0.5d0*(pres(i,j)+pres(i+1,j)),
+     &                  0.5d0*(machloc(i,j)+machloc(i+1,j))
       end do
 !
 !      close(100)
@@ -76,6 +90,7 @@
       write(300,*) 'Zone I=',ny+1,', J=',nx-1,', F=POINT'
 301   format(6f12.8)
 !
+      print*
       print*, "Start file write . . ."
 !
       do i = 1,nx-1

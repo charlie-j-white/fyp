@@ -7,19 +7,17 @@
 !
 !
       integer :: nx,ny,nl,np
-      integer :: i,j,imax
+      integer :: i,j
 !
-      double precision :: gam,CFL,vx,vy,dx,dy,dtmax,SoS,vabs,
-     & vxm,vym,dxm,dym,k
+      double precision :: gam,CFL,vx,vy,dx,dy,dtmax,SoS,k
 !
       double precision, dimension(1,np) :: params
       double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)) :: 
-     &         flow,residual
+     &         flow
       double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) :: 
      &         meshX,meshY
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
      &         u1,u2,u3,u5,pres,
-     &         r1,r2,r3,r5,
      &         dt
 !
 !
