@@ -3,6 +3,329 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
+      subroutine cost_is(nx,ny,nl,na,np,params,flow,alpha,Jcost)
+!
+!
+      integer :: nx,ny,nl,na,np
+      integer :: i,j
+!
+      double precision :: ds, Jcost
+!
+      double precision, dimension(1,na) :: alpha
+      double precision, dimension(1,np) :: params
+      double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)) :: 
+     &         flow
+      double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) :: 
+     &         meshX,meshY
+      double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
+     &         u1,u2,u3,u5,pres
+!
+!
+!
+!
+!
+!
+      call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
+!
+      call pressure(nx,ny,nl,pres,u1,u2,u3,u5)
+!
+      call meshing(nx,ny,na,nl,alpha,meshX,meshY,np,params)
+!
+!
+!     cost function - just integrate pressure along walls. assume line
+!     of symmetry
+!
+      do i = 1,nx
+!
+      ds = (meshX(i,ny)+meshX(i-1,ny))**2.0d0+
+     &     (meshY(i,ny)+meshY(i-1,ny))**2.0d0
+      ds = DSQRT(ds)
+!
+      Jcost = Jcost + 2*ds*pres(i,ny)
+!      
+      end do
+!
+!
+!
+!
+!
+!
+!
+!
+      end subroutine cost_is
+!**********************************************************************!
+!                          Charlie Anderson                            !
+!                  University of Bristol, March 2019                   !
+!**********************************************************************!
+!    
+      subroutine split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
+      integer :: nx,ny,nl,nh,nb
+      integer :: i,j,R
+      double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)), intent(in) 
+     & :: flow
+      double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
+     &         u1,u2,u3,u5
+!      double precision :: 
+!
+!
+!                                               1  2  3  4  5
+!       1 2 3 4 5 6 7 ... 13 14 15     ==>      6  7  8  9  10
+!                                               11 12 13 14 15
+!
+!
+!
+!
+      nh = 2*nl*(nx+ny)
+      nb = nx*ny
+!
+!
+!
+!     seed flow vector with test values
+!
+!      do i = 1,4*nh+4*nb
+!      flow(1,i) = i
+!      end do
+!
+!
+!
+!
+!
+!
+!
+!
+!     assign first flow variable (wall_bottom, wall_top, inflow, outflow)
+!
+      do j = 1,nl
+      do i = 1,nx
+      R = 0
+      u1(i,1-j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,nx
+      R = nl*nx
+      u1(i,ny+j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,ny
+      R = 2*nl*nx
+      u1(1-j,i) = flow(1,R+(j-1)*ny+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,ny
+      R = 2*nl*nx+nl*ny
+      u1(nx+j,i) = flow(1,R+(j-1)*ny+i)
+      end do
+      end do
+!
+!
+!
+!
+!     assign second flow variable (wall_bottom, wall_top, inflow, outflow)
+!
+      do j = 1,nl
+      do i = 1,nx
+      R = 1*nh+0
+      u2(i,1-j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,nx
+      R = 1*nh+nl*nx
+      u2(i,ny+j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,ny
+      R = 1*nh+2*nl*nx
+      u2(1-j,i) = flow(1,R+(j-1)*ny+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,ny
+      R = 1*nh+2*nl*nx+nl*ny
+      u2(nx+j,i) = flow(1,R+(j-1)*ny+i)
+      end do
+      end do
+!
+!
+!
+!
+!     assign third flow variable (wall_bottom, wall_top, inflow, outflow)
+!
+      do j = 1,nl
+      do i = 1,nx
+      R = 2*nh+0
+      u3(i,1-j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,nx
+      R = 2*nh+nl*nx
+      u3(i,ny+j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,ny
+      R = 2*nh+2*nl*nx
+      u3(1-j,i) = flow(1,R+(j-1)*ny+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,ny
+      R = 2*nh+2*nl*nx+nl*ny
+      u3(nx+j,i) = flow(1,R+(j-1)*ny+i)
+      end do
+      end do
+!
+!
+!
+!     assign fifth flow variable (wall_bottom, wall_top, inflow, outflow)
+!
+      do j = 1,nl
+      do i = 1,nx
+      R = 3*nh+0
+      u5(i,1-j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,nx
+      R = 3*nh+nl*nx
+      u5(i,ny+j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,ny
+      R = 3*nh+2*nl*nx
+      u5(1-j,i) = flow(1,R+(j-1)*ny+i)
+      end do
+      end do
+!
+      do j = 1,nl
+      do i = 1,ny
+      R = 3*nh+2*nl*nx+nl*ny
+      u5(nx+j,i) = flow(1,R+(j-1)*ny+i)
+      end do
+      end do
+!
+!
+!
+!
+!     assign body cells
+!
+      do j = 1,ny
+      do i = 1,nx
+      R = 4*nh+0*nb
+      u1(i,j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,ny
+      do i = 1,nx
+      R = 4*nh+1*nb
+      u2(i,j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,ny
+      do i = 1,nx
+      R = 4*nh+2*nb
+      u3(i,j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+      do j = 1,ny
+      do i = 1,nx
+      R = 4*nh+3*nb
+      u5(i,j) = flow(1,R+(j-1)*nx+i)
+      end do
+      end do
+!
+!
+!
+!
+!
+!
+!
+!
+!      print*, "     "
+!      print*, "------------------------- fwd --------------------------"
+!      print*, "     "
+!      print*, flow
+!!
+!      call debug_cell(nx,ny,nl,u1)
+!      call debug_cell(nx,ny,nl,u2)
+!      call debug_cell(nx,ny,nl,u3)
+!      call debug_cell(nx,ny,nl,u5)
+!!
+!      print*, "--------------------------------------------------------"
+!      print*, "     "
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+      end subroutine split_fwd
+!**********************************************************************!
+!                          Charlie Anderson                            !
+!                  University of Bristol, March 2019                   !
+!**********************************************************************!
+!    
+      subroutine pressure(nx,ny,nl,pres,u1,u2,u3,u5)
+      integer :: nx,ny,nl
+      integer :: i,j
+      double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) :: 
+     &         pres
+      double precision, dimension(1-nl:nx+nl,1-nl:ny+nl), intent(in) :: 
+     &         u1,u2,u3,u5
+      double precision :: ga1
+!
+!
+      ga1 = 0.4d0
+!
+!
+!
+      do j = 1-nl,ny+nl
+      do i = 1-nl,nx+nl
+!
+      if (u1(i,j).NE.0.0d0) then
+      pres(i,j) = ga1*(u5(i,j) - 
+     & 0.5d0*(u2(i,j)**2.0d0+u3(i,j)**2.0d0)/u1(i,j))
+      end if
+!
+      end do
+      end do
+!
+!
+!
+!
+!
+!
+!
+      end subroutine pressure
+!**********************************************************************!
+!                          Charlie Anderson                            !
+!                  University of Bristol, March 2019                   !
+!**********************************************************************!
+!    
       subroutine meshing(nx,ny,na,nl,alpha,meshX,meshY,np,params)
 !    
       integer:: nx,ny,na,nl,np

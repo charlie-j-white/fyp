@@ -26,7 +26,9 @@ _OBJS = wrapper.o\
        fg_vector.o\
        itinfo.o\
        jst_calcs.o\
-       timestep.o
+       timestep.o\
+       cost_is.o\
+       aresid.o
 
 
 # specify directory for object files and put them there
@@ -47,4 +49,4 @@ main: $(OBJS)
 # last rule, `refreshes' the build by deleting the necessary files
 .PHONY: clean
 clean:
-	rm $(OBJS) main
+	rm $(OBJS) main *.plt

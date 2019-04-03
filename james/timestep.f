@@ -43,9 +43,9 @@
       do j = 1,ny
       do i = 1,nx
 !
-      SoS = DSQRT(gam*pres(i,j)/u1(i,j))
-      vx = DABS(u2(i,j)/u1(i,j)) +SoS
-      vy = DABS(u3(i,j)/u1(i,j)) +SoS
+      SoS = DSQRT(DABS(gam*pres(i,j)/u1(i,j)))
+      vx = DABS(u2(i,j)/u1(i,j)) +DABS(SoS)
+      vy = DABS(u3(i,j)/u1(i,j)) +DABS(SoS)
 !
       dx = DMAX1(DABS(meshX(i,j) - meshX(i-1,j)),
      &           DABS(meshX(i-1,j) - meshX(i-2,j)))

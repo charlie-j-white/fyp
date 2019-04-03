@@ -3,10 +3,10 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
-      subroutine itinfo(nx,ny,nl,flow,flow0,dt,it,rmsmax)
+      subroutine itinfo(nx,ny,nl,flow,flow0,dt,it,rmsmax,rms,runtype)
 !
 !
-      integer :: nx,ny,nl,it
+      integer :: nx,ny,nl,it,runtype
       integer :: i,j
 !
       double precision :: dtmax,dtmin,k,rms,rmsmax
@@ -41,12 +41,12 @@
       rms = rms + k/(dt(i,j)*dt(i,j))
 !
 !
-      if (dt(i,j) .gt. dtmax) then 
-              dtmax = dt(i,j)
-      end if
-      if (dt(i,j) .lt. dtmin) then 
-              dtmin = dt(i,j)
-      end if
+!      if (dt(i,j) .gt. dtmax) then 
+!              dtmax = dt(i,j)
+!      end if
+!      if (dt(i,j) .lt. dtmin) then 
+!              dtmin = dt(i,j)
+!      end if
 !
 !
       end do
@@ -61,19 +61,16 @@
 !
 !   
 !
-!
+!     print information to screen if necessary
+      if (runtype .EQ. 0) then
 !  
       if (it == 1) then 
               print*, " "
-              print*, "  ITERATION         LOG(RMS)      
-     &RMS                   RMS_MAX"
+              print*, "  ITERATION         LOG(RMS) "
       end if
+      print*, it, DLOG10(rms/rmsmax)
 !
-!
-!
-      print*, it, DLOG10(rms/rmsmax), rms, rmsmax,
-     & pres(nx+1,5)/pres(0,5)
-!
+      end if
 !
 !   
 !

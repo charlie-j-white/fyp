@@ -15,9 +15,7 @@ solution = np.loadtxt('transect.plt', skiprows=1)
 X = column(solution, 0)
 u1 = column(solution, 1)
 u2 = column(solution, 2)
-u3 = column(solution, 3)
-u5 = column(solution, 4)
-pres = column(solution, 5)
+pres = column(solution, 3)
 
 
 # plot stuff
