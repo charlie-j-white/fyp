@@ -3,20 +3,19 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
-      subroutine meshing(nx,ny,na,nl,alpha,meshX,meshY,np,params)
+      subroutine meshing(nx,ny,na,nl,alpha,meshX,meshY)
 !    
-      integer:: nx,ny,na,nl,np
+      integer:: nx,ny,na,nl
 !    
-      integer :: n,i,j,k
+      integer :: n,i,ii,j,k
       double precision, dimension(1,na) :: alpha
-      double precision, dimension(1,np) :: params
       double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) ::
      &    meshX,meshY
       double precision, dimension(0:na+1) :: xc,yc,a,c,l,z
       double precision, dimension(0:na) :: h,mu,b,d
       double precision, dimension(1:na) :: be
       double precision, dimension(1:nx+1) :: xt,yt,phi,phi_ig,ps,xi,y0
-      double precision :: Lx,Ly,s_pos,s_hgt,s_wdt
+      double precision :: Lx,Ly,dt,s_pos,s_hgt
 !
 !
 !
@@ -48,10 +47,9 @@
       n = na + 1
       nx = nx + 1
       Lx = 1.0d0
-      Ly = params(1,12)
-      s_pos = params(1,9)
-      s_hgt = params(1,10)
-      s_wdt = params(1,11)
+      Ly = 0.4d0
+      s_pos = 0.8d0
+      s_hgt = 5.0d0
 !
 !
 !     initialise control points:
@@ -170,7 +168,7 @@
       phi_ig(1) = 0.0d0
 !
       do i = 2,nx
-      phi(i) = 1.0d0/yt(i) + s_hgt*3**(-s_wdt*(i-s_pos*nx)**2)
+      phi(i) = 1.0d0/yt(i) + s_hgt*3**(-0.1d0*(i-s_pos*nx)**2)
       phi_ig(i) = phi_ig(i-1) + phi(i)
       end do
 !

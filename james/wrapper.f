@@ -5,47 +5,106 @@
 !    
       program wrapper
 !    
+      integer :: na = 40
+      integer :: np = 12
+      double precision, dimension(1,40) :: alpha
+      double precision, dimension(1,12) :: params
+!    
       integer :: nx, ny, nl
-!    
-      integer :: na = 2
-      integer :: np = 7
-      double precision, dimension(1,2) :: alpha
-      double precision, dimension(1,7) :: params
+      double precision :: AR, pi, frac
 !    
 !    
 !    
 !    
 !    
-!     mesh information, numbers define x and y direction and number of
-!     Halo cells 
+!     information about the structured mesh
+!-----------------------------------------------------------------------
+!    
+!     x cells      y cells      halo cells (must be 2 for JST)
 !    
       nx = 100
       ny = 40
       nl = 2
 
+!    
+!    
+!      
+!    
+!    
+!      
+!    
+!    
+!     information to run the CFD code, imput as a vector for simplicity
+!-----------------------------------------------------------------------
+!    
+!    
+!     Mach_in      Pres_rat       gam       CFL      tmax   
+!    
+      params(1,1) = 0.3d0
+      params(1,2) = 0.8d0
+      params(1,3) = 1.4d0
+      params(1,4) = 0.3d0
+      params(1,5) = DBLE(10000)
+!    
+!    
+!     K2_jst      K4_jst
+!    
+      params(1,6) = 1.0d0/16.0d0
+      params(1,7) = 1.0d0/32.0d0
+!    
+!    
+!     adaptive meshing ON/OFF (1/0)     
+!    
+      params(1,8) = 1.0d0
+!    
+!    
+!     s_pos       s_hgt         s_wdt      Ly
+!    
+      params(1,9) = 0.7d0
+      params(1,10) = 5.0d0
+      params(1,11) = 0.05d0
+      params(1,12) = 0.4d0
+!    
+!    
+!      
+!    
+!    
+!      
+!      
+!    
+!    
 !      
 !    
 !     design variables: currently only throat ratio but will increase at
 !     some point  
+!-----------------------------------------------------------------------
 !    
-      alpha(1,1) = 2.0d0
-      alpha(1,2) = 5.0d0
+      AR = 2.0d0
+      pi = 3. 1415926535897932d0
+!
+!     set the height of the mesh along the length of the duct
+      do i = 1,na
+      frac = DBLE(i)/(na+1.0d0)
+      alpha(1,i) = 1.0d0/AR + (1.0d0 - 1.0d0/AR)*cos(pi*frac)**2.0d0
+!      alpha(1,i)=1.0d0/AR+(1.0d0-1.0d0/AR)*cos(2.0d0*pi*frac)**2.0d0
+      end do
+!
+!     add a perturbation
+!      alpha(1,10) = alpha(1,10) + 0.1
+!
+!
 !    
 !    
 !    
-!     information to run the CFD code, imput as a vector for simplicity
-!     Mach_in   Pres_rat   gam   CFL   tmax   K2_jst   K4_jst
-!    
-      params(1,1) = 0.1d0
-      params(1,2) = 0.99d0
-      params(1,3) = 1.4d0
-      params(1,4) = 0.1d0
-      params(1,5) = DBLE(1000)
-      params(1,6) = 1.0d0/14.0d0
-      params(1,7) = 1.0d0/256.0d0
 !    
 !    
 !    
+!    
+!    
+!    
+!    
+!    
+!-----------------------------------------------------------------------
 !    
       call main(nx,ny,na,nl,np,alpha,params)
 !    
@@ -53,3 +112,4 @@
 !    
 !    
       end program wrapper
+!**********************************************************************!

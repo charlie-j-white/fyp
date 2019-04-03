@@ -83,7 +83,7 @@
       residual(1,j) = 0.0d0
       end do
 !
-      call meshing(nx,ny,na,nl,alpha,meshX,meshY)
+      call meshing(nx,ny,na,nl,alpha,meshX,meshY,np,params)
 !
       call initialise(nx,ny,nl,flow,np,params,meshX,meshY)
 !
