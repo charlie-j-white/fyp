@@ -202,7 +202,7 @@
 !
 !
 !
-!     call cost function from here
+!     call cost and adjoint function from here
 !-----------------------------------------------------------------------
 !
 !     bear in mind relationship between flow variables w and design
@@ -240,46 +240,22 @@
 !
 !
 !
-!
-!
-!      call split_fwd(nx,ny,nl,residual,r1,r2,r3,r5)
-!      call debug_cell(nx,ny,nl,r1)
-!      call debug_cell(nx,ny,nl,r2)
-!      call debug_cell(nx,ny,nl,r3)
-!      call debug_cell(nx,ny,nl,r5)
-!
-!
-!
-!
-!
-!
-!
       Jcost = 0.0d0;
 !
-      call cost_is(nx,ny,nl,na,np,params,flow,alpha,Jcost)
-      call aresid(nx,ny,nl,flow0,residual,np,params,dt,na,alpha)
 !
+!     flow or flow0?
+!     some worrying in/out dependence of flow in aMresid_d.f
 !
-!      call split_fwd(nx,ny,nl,residual,r1,r2,r3,r5)
-!      call debug_cell(nx,ny,nl,r1)
-!      call debug_cell(nx,ny,nl,r2)
-!      call debug_cell(nx,ny,nl,r3)
-!      call debug_cell(nx,ny,nl,r5)
+      call adjoint(nx,ny,nl,flow0,residual,np,params,dt,na,alpha,Jcost)
 !
-!
+!      call cost_is(nx,ny,nl,na,np,params,flow,alpha,Jcost)
+!      call aresid(nx,ny,nl,flow0,residual,np,params,dt,na,alpha)
 !
 !
 !
 !
 !
 !
-!
-!
-!
-!
-!
-!      call adjoint function from here
-!-----------------------------------------------------------------------
 !
 !
 !

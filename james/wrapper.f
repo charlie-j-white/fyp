@@ -5,9 +5,9 @@
 !    
       program wrapper
 !    
-      integer :: na = 3
+      integer :: na = 5
       integer :: np = 13
-      double precision, dimension(1,3) :: alpha, alpha_fd,
+      double precision, dimension(1,5) :: alpha, alpha_fd,
      &   dJda_fd, dJda_ad
       double precision, dimension(1,13) :: params
 !    
@@ -30,8 +30,6 @@
 !
       runtype = 0
 !    
-!             < 0: No operation - displays help message 
-!    
 !             = 0: Normal operation    INPUT: alpha;
 !                                     OUTPUT: cost; solution &
 !                                             convergence files;
@@ -41,6 +39,8 @@
 !      
 !             = 2: Adjoint solver      INPUT: alpha;
 !                                     OUTPUT: cost; sensitivity;
+!    
+!             < 0: No operation - displays help message 
 !    
 !    
 !    
@@ -53,10 +53,9 @@
 !    
 !     x cells      y cells      halo cells (must be 2 for JST)
 !    
-      nx = 4
-      ny = 4
+      nx = 10
+      ny = 10
       nl = 2
-
 !    
 !    
 !      
@@ -94,13 +93,13 @@
       params(1,9) = 0.71d0
       params(1,10) = 5.0d0
       params(1,11) = 1.0d0/25.0d0
-      params(1,12) = 0.4d0
+      params(1,12) = 0.2d0
 !    
 !    
 !     residual_tol
 !    
-!      params(1,13) = 0.00000001d0
-      params(1,13) = 0.000001d0
+      params(1,13) = 0.00000001d0
+!      params(1,13) = 0.000001d0
 !    
 !      
 !      

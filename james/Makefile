@@ -6,7 +6,7 @@
 
 # define compiler options
 FC =gfortran
-FLIBS =
+FLIBS =-llapack
 FFLAGS =-O3 -Wall
 
 
@@ -28,7 +28,10 @@ _OBJS = wrapper.o\
        jst_calcs.o\
        timestep.o\
        cost_is.o\
-       aresid.o
+       aresid.o\
+       aMcost_is_d.o\
+       aMresid_d.o\
+       adjoint.o
 
 
 # specify directory for object files and put them there
