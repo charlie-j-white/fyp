@@ -3,7 +3,7 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !                                                          
-      subroutine main(nx,ny,na,nl,np,alpha,params,runtype,Jcost)
+      subroutine main(nx,ny,na,nl,np,alpha,params,runtype,Jcost,dJda)
 !
 !
       integer :: nx,ny,na,nl,np
@@ -11,13 +11,12 @@
 !
       double precision :: rmsmax,rms,Jcost
 !
-      double precision, dimension(1,na) :: alpha
+      double precision, dimension(1,na) :: alpha,dJda
       double precision, dimension(1,np) :: params
       double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)) ::
-     & flow,flow0,residual,residual0
+     & flow,flow0,residual
       double precision, dimension(1-nl:nx+nl,1-nl:ny+nl) ::
-     & u1,u2,u3,u5,dt,
-     & r1,r2,r3,r5
+     & u1,u2,u3,u5,dt
       double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) ::
      & meshX,meshY
 !
@@ -78,7 +77,7 @@
 !
 !
 !     open file for convergence information
-      if (runtype .EQ. 0) then
+      if ((runtype .EQ. 0) .OR. (params(1,14) .EQ. 0.0d0)) then
       open(456, file='convergence.plt')
       write(456,*) 'VARIABLES = "it" "log(rms)"'
 457   format(2f15.8)
@@ -98,29 +97,8 @@
 !
 !
 !
-!      do j = 0-nl,ny+nl
-!      print*, meshX(:,j)
-!      end do
-!      print*
-!      do j = 0-nl,ny+nl
-!      print*, meshY(:,j)
-!      end do
-!      print*
-!
-!
-      print*
-!
 !
       call meshing(nx,ny,na,nl,alpha,meshX,meshY,np,params)
-!
-!      do j = 0-nl,ny+nl
-!      print*, meshX(:,j)
-!      end do
-!      print*
-!      do j = 0-nl,ny+nl
-!      print*, meshY(:,j)
-!      end do
-!      print*
 !
 !
 !
@@ -162,7 +140,7 @@
 !
 !
 !     write to file if a runtype of 0
-      if (runtype .EQ. 0) then
+      if ((runtype .EQ. 0) .OR. (params(1,14) .EQ. 0.0d0)) then
       write(456,457) DBLE(i), DLOG10(rms/rmsmax)
       end if
 !
@@ -185,14 +163,10 @@
 !     end of main calcs, post-processing
 !-----------------------------------------------------------------------
 !
-!     post-process the results if runtype is 0
-      if (runtype .EQ. 0) then
+!     post-process the results & close convergence file if runtype is 0
+      if ((runtype .EQ. 0) .OR. (params(1,14) .EQ. 0.0d0)) then
       call postprocess(nx,ny,nl,flow,u1,u2,u3,u5,meshX,meshY,rmsmax,
      & flow0)
-      end if
-!
-!     close convergence file if a runtype of 0
-      if (runtype .EQ. 0) then
       close(456)
       end if
 !
@@ -202,7 +176,24 @@
 !
 !
 !
-!     call cost and adjoint function from here
+!
+!
+!     call cost function from here
+!-----------------------------------------------------------------------
+!
+      Jcost = 0.0d0;
+      call cost_is(nx,ny,nl,na,np,params,flow,alpha,Jcost)
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!     call adjoint function from here
 !-----------------------------------------------------------------------
 !
 !     bear in mind relationship between flow variables w and design
@@ -237,21 +228,12 @@
 !     4) Form total derivative.
 !
 !
-!
-!
-!
-      Jcost = 0.0d0;
-!
-!
-!     flow or flow0?
-!     some worrying in/out dependence of flow in aMresid_d.f
-!
-      call adjoint(nx,ny,nl,flow0,residual,np,params,dt,na,alpha,Jcost)
-!
-!      call cost_is(nx,ny,nl,na,np,params,flow,alpha,Jcost)
-!      call aresid(nx,ny,nl,flow0,residual,np,params,dt,na,alpha)
-!
-!
+!      if ((runtype .EQ. 2) .OR. (runtype .EQ. 3)) then
+      if (params(1,14) .EQ. 2.0d0) then
+      print*, "      end flow solution."
+      call adjoint(nx,ny,nl,flow0,residual,np,params,dt,na,alpha,
+     & Jcost,dJda)
+      end if
 !
 !
 !

@@ -708,7 +708,7 @@ C
         dd(j) = (cd(j+1)-cd(j))/(3.0d0*h(j))
         d(j) = (c(j+1)-c(j))/(3.0d0*h(j))
       ENDDO
-      DO ii1=1,nx+1
+      DO ii1=1,nx
         ytd(ii1) = 0.D0
       ENDDO
 C
@@ -767,10 +767,10 @@ C
 C     create potential function and integrate it
 C
         phi_ig(1) = 0.0d0
-        DO ii1=1,nx+1
+        DO ii1=1,nx
           phi_igd(ii1) = 0.D0
         ENDDO
-        DO ii1=1,nx+1
+        DO ii1=1,nx
           phid(ii1) = 0.D0
         ENDDO
 C
@@ -792,7 +792,7 @@ C
      +      phi_ig(1))**2
           phi_ig(i) = (phi_ig(i)-phi_ig(1))/(phi_ig(nx)-phi_ig(1))
         ENDDO
-        DO ii1=1,nx+1
+        DO ii1=1,nx
           xid(ii1) = 0.D0
         ENDDO
 C
@@ -830,7 +830,7 @@ C     else perform linear interpolation
           xi(i) = xt(k-1) + (ps(i)-phi_ig(k-1))*(xt(k)-xt(k-1))/(phi_ig(
      +      k)-phi_ig(k-1))
  44     CONTINUE
-        DO ii1=1,nx+1
+        DO ii1=1,nx
           xtd(ii1) = 0.D0
         ENDDO
 C
@@ -874,7 +874,7 @@ C     do the actual spline formula
      +      **2.0d0 + d(j)*(xt(i)-xc(j))**3.0d0
         ENDDO
       ELSE
-        DO ii1=1,nx+1
+        DO ii1=1,nx
           xtd(ii1) = 0.D0
         ENDDO
       END IF

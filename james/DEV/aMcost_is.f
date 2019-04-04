@@ -25,11 +25,11 @@
 !
 !
 !
-      call split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
+      call split_fwd2(nx,ny,nl,flow,u1,u2,u3,u5)
 !
       call pressure(nx,ny,nl,pres,u1,u2,u3,u5)
 !
-      call meshing(nx,ny,na,nl,alpha,meshX,meshY,np,params)
+      call meshing2(nx,ny,na,nl,alpha,meshX,meshY,np,params)
 !
 !
 !     cost function - just integrate pressure along walls. assume line
@@ -58,7 +58,7 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
-      subroutine split_fwd(nx,ny,nl,flow,u1,u2,u3,u5)
+      subroutine split_fwd2(nx,ny,nl,flow,u1,u2,u3,u5)
       integer :: nx,ny,nl,nh,nb
       integer :: i,j,R
       double precision, dimension(1,4*(nx+2*nl)*(ny+2*nl)), intent(in) 
@@ -326,7 +326,7 @@
 !                  University of Bristol, March 2019                   !
 !**********************************************************************!
 !    
-      subroutine meshing(nx,ny,na,nl,alpha,meshX,meshY,np,params)
+      subroutine meshing2(nx,ny,na,nl,alpha,meshX,meshY,np,params)
 !    
       integer:: nx,ny,na,nl,np
 !    
@@ -335,10 +335,13 @@
       double precision, dimension(1,np) :: params
       double precision, dimension(0-nl:nx+nl,0-nl:ny+nl) ::
      &    meshX,meshY
-      double precision, dimension(0:na+1) :: xc,yc,a,c,l,z
-      double precision, dimension(0:na) :: h,mu,b,d
-      double precision, dimension(1:na) :: be
-      double precision, dimension(1:nx+1) :: xt,yt,phi,phi_ig,ps,xi,y0
+!
+!     try increasing all array vectors by one to account for nx inc.
+      double precision, dimension(0:na+2) :: xc,yc,a,c,l,z
+      double precision, dimension(0:na+1) :: h,mu,b,d
+      double precision, dimension(1:na+1) :: be
+      double precision, dimension(1:nx+2) :: xt,yt,phi,phi_ig,ps,xi,y0
+!
       double precision :: Lx,Ly,s_pos,s_hgt,s_wdt
 !
 !
@@ -463,6 +466,8 @@
       if (xc(k) .GT. xt(i)) then
         j = k-1
         goto 33
+      else
+        j = 0
       end if
       end do
 33    continue
@@ -571,6 +576,8 @@
       if (xc(k) .GT. xt(i)) then
         j = k-1
         goto 55
+      else
+        j = 0
       end if
       end do
 55    continue

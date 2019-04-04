@@ -4,7 +4,7 @@
 !**********************************************************************!
 !    
       subroutine adjoint(nx,ny,nl,flow,residual,np,params,dt,na,alpha,
-     & Jcost)
+     & Jcost,SENS)
 !
 !
       integer :: nx,ny,nl,np,na
@@ -48,15 +48,8 @@
 !
       nb = nx*ny
       nh = 2*nl*(nx+ny)
-      nt = 4*nb + 4*nh + 16*nl*nl
-      print*
+      nt = 4*(nx+2*nl)*(ny+2*nl)
       print*, "      adjoint called from main . . ."
-      print*
-      print*, "  4*nh = ", 4*nh
-      print*, "  4*nb = ", 4*nb
-      print*, "16*nl2 = ", 16*nl*nl
-      print*, "    nt = ", nt
-      print*
 !
 !
 !
@@ -123,6 +116,7 @@
 !
 !
 !
+      print*, "        calculate partial derivatives . . ."
 !
 !
 !     ------- get dJda -------
@@ -146,18 +140,16 @@
 !
 !
 !     call cost function to relevant part of hold array
-!      call cost_is_d(nx, ny, nl, na, np, params, flow, flow_s,
-!     & alpha, alpha_s, jcost, dJda(1,i))
+      call cost_is_d(nx, ny, nl, na, np, params, flow, flow_s,
+     & alpha, alpha_s, jcost, dJda(1,i))
 !
 !
       end do
 !
 !
 !
-      print*, "dsfsdafdsafdsfadsafa"
 !
 !
-      stop
 !
 !
 !     ------- get dJdw -------
@@ -306,6 +298,7 @@
       end do
 !
 !
+      print*, "        partial derivatives calculated."
 !
 !
 !
@@ -388,14 +381,14 @@
 !
 !
       INFO = -5
-      print*, "      "
-      print*, "      begin flux Jacobian factorisation . . ."
-      print*,"      matrix solved with status", INFO, "; success = '0';"
+      print*, "        begin flux Jacobian factorisation . . ."
       call DGETRF(nw,nw,fluxjac,nw,IPIV,INFO)
-      print*, "      begin system solution . . ."
+      print*, "        matrix solved with status", 
+     &  INFO, "; success = '0';"
+      print*, "        begin system solution . . ."
       call DGETRS('T',nw,1,fluxjac,nw,IPIV,adj,nw,INFO)
-      print*,"      system solved with status", INFO, "; success = '0';"
-      print*, "      "
+      print*, "        system solved with status", 
+     &  INFO, "; success = '0';"
 !
 !
 !      print*, "   index         adjoint vector"
@@ -418,7 +411,6 @@
 !
 !
 !
-      print*
 !
 !
       do i = 1,na
@@ -429,8 +421,8 @@
       end do
 !
 !
-      SENS(1,i) = dJda(1,i) + ans
-      print*, SENS(1,i)
+      SENS(1,i) = dJda(1,i) - ans
+!      print*, SENS(1,i)
 !
 !
       end do
@@ -450,7 +442,7 @@
 !
 !
 !
-      print*, "      adjoint completed in main . . ."
+      print*, "      adjoint completed in main."
 !
 !      de-bugging functions, if needed 
 !-----------------------------------------------------------------------

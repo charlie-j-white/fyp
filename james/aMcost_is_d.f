@@ -52,13 +52,13 @@ C
 C
 C
       CALL SPLIT_FWD2_D(nx, ny, nl, flow, flowd, u1, u1d, u2, u2d, u3, 
-     +                 u3d, u5, u5d)
+     +                  u3d, u5, u5d)
 C
       CALL PRESSURE_D(nx, ny, nl, pres, presd, u1, u1d, u2, u2d, u3, u3d
      +                , u5, u5d)
 C
-      CALL MESHING2_D(nx, ny, na, nl, alpha, alphad, meshx, meshxd,meshy
-     +               , meshyd, np, params)
+      CALL MESHING2_D(nx, ny, na, nl, alpha, alphad, meshx, meshxd, 
+     +                meshy, meshyd, np, params)
       jcostd = 0.D0
 C
 C
@@ -84,7 +84,7 @@ C
       ENDDO
       END
 
-C  Differentiation of split_fwd in forward (tangent) mode:
+C  Differentiation of split_fwd2 in forward (tangent) mode:
 C   variations   of useful results: u1 u2 u3 u5
 C   with respect to varying inputs: flow
 C**********************************************************************!
@@ -92,8 +92,8 @@ C                          Charlie Anderson                            !
 C                  University of Bristol, March 2019                   !
 C**********************************************************************!
 C    
-      SUBROUTINE SPLIT_FWD2_D(nx, ny, nl, flow, flowd, u1, u1d, u2, u2d,
-     +                       u3, u3d, u5, u5d)
+      SUBROUTINE SPLIT_FWD2_D(nx, ny, nl, flow, flowd, u1, u1d, u2, u2d
+     +                        , u3, u3d, u5, u5d)
       IMPLICIT NONE
 C
 C
@@ -423,7 +423,7 @@ C
       ENDDO
       END
 
-C  Differentiation of meshing in forward (tangent) mode:
+C  Differentiation of meshing2 in forward (tangent) mode:
 C   variations   of useful results: meshx meshy
 C   with respect to varying inputs: alpha
 C**********************************************************************!
@@ -431,8 +431,8 @@ C                          Charlie Anderson                            !
 C                  University of Bristol, March 2019                   !
 C**********************************************************************!
 C    
-      SUBROUTINE MESHING2_D(nx, ny, na, nl, alpha, alphad, meshx,meshxd
-     +                     , meshy, meshyd, np, params)
+      SUBROUTINE MESHING2_D(nx, ny, na, nl, alpha, alphad, meshx, meshxd
+     +                      , meshy, meshyd, np, params)
       IMPLICIT NONE
 C
 C
@@ -490,16 +490,19 @@ C
      +                                                       meshy
       DOUBLE PRECISION meshxd(0-nl:nx+nl, 0-nl:ny+nl), meshyd(0-nl:nx+nl
      +                 , 0-nl:ny+nl)
-      DOUBLE PRECISION, DIMENSION(0:na+1) :: xc, yc, a, c, l, z
-      DOUBLE PRECISION ycd(0:na+1), ad(0:na+1), cd(0:na+1), zd(0:na+1)
-      DOUBLE PRECISION, DIMENSION(0:na) :: h, mu, b, d
-      DOUBLE PRECISION bd(0:na), dd(0:na)
-      DOUBLE PRECISION, DIMENSION(na) :: be
-      DOUBLE PRECISION bed(na)
-      DOUBLE PRECISION, DIMENSION(nx+1) :: xt, yt, phi, phi_ig, ps, xi, 
+C
+C     try increasing all array vectors by one to account for nx inc.
+      DOUBLE PRECISION, DIMENSION(0:na+2) :: xc, yc, a, c, l, z
+      DOUBLE PRECISION ycd(0:na+2), ad(0:na+2), cd(0:na+2), zd(0:na+2)
+      DOUBLE PRECISION, DIMENSION(0:na+1) :: h, mu, b, d
+      DOUBLE PRECISION bd(0:na+1), dd(0:na+1)
+      DOUBLE PRECISION, DIMENSION(na+1) :: be
+      DOUBLE PRECISION bed(na+1)
+      DOUBLE PRECISION, DIMENSION(nx+2) :: xt, yt, phi, phi_ig, ps, xi, 
      +                                     y0
-      DOUBLE PRECISION xtd(nx+1), ytd(nx+1), phid(nx+1), phi_igd(nx+1), 
-     +                 xid(nx+1)
+      DOUBLE PRECISION xtd(nx+2), ytd(nx+2), phid(nx+2), phi_igd(nx+2), 
+     +                 xid(nx+2)
+C
       DOUBLE PRECISION lx, ly, s_pos, s_hgt, s_wdt
       INTRINSIC DBLE
       DOUBLE PRECISION pwy1
@@ -550,7 +553,7 @@ C
       xc(n) = 1.0d0
       yc(0) = 1.0d0
       yc(n) = 1.0d0
-      DO ii1=0,na+1
+      DO ii1=0,na+2
         ycd(ii1) = 0.D0
       ENDDO
 C
@@ -559,7 +562,7 @@ C
         ycd(i) = alphad(1, i)
         yc(i) = alpha(1, i)
       ENDDO
-      DO ii1=0,na+1
+      DO ii1=0,na+2
         ad(ii1) = 0.D0
       ENDDO
 C
@@ -582,7 +585,7 @@ C
       DO i=0,n-1
         h(i) = xc(i+1) - xc(i)
       ENDDO
-      DO ii1=1,na
+      DO ii1=1,na+1
         bed(ii1) = 0.D0
       ENDDO
 C
@@ -598,7 +601,7 @@ C
       l(0) = 1.0d0
       mu(0) = 0.0d0
       z(0) = 0.0d0
-      DO ii1=0,na+1
+      DO ii1=0,na+2
         zd(ii1) = 0.D0
       ENDDO
 C
@@ -617,13 +620,13 @@ C
 C     final arrays
 C
       c(n) = 0.0d0
-      DO ii1=0,na
+      DO ii1=0,na+1
         dd(ii1) = 0.D0
       ENDDO
-      DO ii1=0,na
+      DO ii1=0,na+1
         bd(ii1) = 0.D0
       ENDDO
-      DO ii1=0,na+1
+      DO ii1=0,na+2
         cd(ii1) = 0.D0
       ENDDO
 C
@@ -658,7 +661,11 @@ C
 C
 C     determine what j value to use; check through control points
         DO k=0,n
-          IF (xc(k) .GT. xt(i)) GOTO 100
+          IF (xc(k) .GT. xt(i)) THEN
+            GOTO 100
+          ELSE
+            j = 0
+          END IF
         ENDDO
         GOTO 33
  100    j = k - 1
@@ -788,7 +795,11 @@ C     have to now re-fit y according to the spline
 C
 C     determine what j value to use; check through control points
           DO k=0,n
-            IF (xc(k) .GT. xt(i)) GOTO 130
+            IF (xc(k) .GT. xt(i)) THEN
+              GOTO 130
+            ELSE
+              j = 0
+            END IF
           ENDDO
           GOTO 55
  130      j = k - 1

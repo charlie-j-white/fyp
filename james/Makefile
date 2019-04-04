@@ -7,7 +7,7 @@
 # define compiler options
 FC =gfortran
 FLIBS =-llapack
-FFLAGS =-O3 -Wall
+FFLAGS =-O3 -Wall -fbounds-check
 
 
 # name which object files to use

@@ -5,11 +5,11 @@
 !    
       program wrapper
 !    
-      integer :: na = 5
-      integer :: np = 13
-      double precision, dimension(1,5) :: alpha, alpha_fd,
-     &   dJda_fd, dJda_ad
-      double precision, dimension(1,13) :: params
+      integer :: na = 40
+      integer :: np = 14
+      double precision, dimension(1,40) :: alpha, alpha_fd,
+     &   dJda_fd, dJda_ad, dJda_error, c_pos
+      double precision, dimension(1,14) :: params
 !    
       integer :: nx, ny, nl, runtype, i, j
       double precision :: AR, pi, frac, h, Jcost, Jcost0
@@ -28,17 +28,33 @@
 !     define what type of run the code will have 
 !-----------------------------------------------------------------------
 !
-      runtype = 0
+      runtype = 3
 !    
 !             = 0: Normal operation    INPUT: alpha;
+!    
 !                                     OUTPUT: cost; solution &
 !                                             convergence files;
 !    
+!    
+!    
 !             = 1: Finite difference   INPUT: alpha; 
+!    
 !                                     OUTPUT: cost; sensitivity;
 !      
+!    
+!    
 !             = 2: Adjoint solver      INPUT: alpha;
+!    
 !                                     OUTPUT: cost; sensitivity;
+!    
+!    
+!    
+!             = 3: Adjoint + FD        INPUT: alpha;
+!    
+!                                     OUTPUT: cost; sensitivity;
+!                                             solution & convergence
+!                                             files;    
+!    
 !    
 !             < 0: No operation - displays help message 
 !    
@@ -53,8 +69,8 @@
 !    
 !     x cells      y cells      halo cells (must be 2 for JST)
 !    
-      nx = 10
-      ny = 10
+      nx = 70
+      ny = 12
       nl = 2
 !    
 !    
@@ -99,10 +115,11 @@
 !     residual_tol
 !    
       params(1,13) = 0.00000001d0
-!      params(1,13) = 0.000001d0
 !    
-!      
-!      
+!    
+!     auxiliary runtype variable, will be overwritten
+!
+      params(1,14) = 0.0d0      
 !    
 !      
 !    
@@ -119,6 +136,7 @@
 !     set the height of the mesh along the length of the duct
       do i = 1,na
       frac = DBLE(i)/(na+1.0d0)
+      c_pos(1,i) = frac
       alpha(1,i) = 1.0d0/AR + (1.0d0 - 1.0d0/AR)*cos(pi*frac)**2.0d0
 !      alpha(1,i)=1.0d0/AR+(1.0d0-1.0d0/AR)*cos(2.0d0*pi*frac)**2.0d0
       end do
@@ -127,6 +145,14 @@
 !      alpha(1,10) = alpha(1,10) + 0.1
 !
 !
+!
+!     initialise derivatives
+!    
+      do i = 1,na
+      dJda_ad(1,i) = 0.0d0
+      dJda_fd(1,i) = 0.0d0
+      dJda_error(1,i) = 0.0d0
+      end do
 !    
 !    
 !    
@@ -134,14 +160,16 @@
 !    
 !    
 !    
-!    
-!    
-!    
-!    
+!     0: Normal system run
 !-----------------------------------------------------------------------
 !    
       if (runtype .EQ. 0) then
-      call main(nx,ny,na,nl,np,alpha,params,runtype,Jcost)
+      call main(nx,ny,na,nl,np,alpha,params,runtype,Jcost,dJda_ad)
+      end if
+!    
+      if (runtype .EQ. 3) then
+      params(1,14) = 0.0d0
+      call main(nx,ny,na,nl,np,alpha,params,runtype,Jcost,dJda_ad)
       end if
 !    
 !    
@@ -157,10 +185,10 @@
 !    
 !    
 !    
-!     finite difference section
+!     1: finite difference run
 !-----------------------------------------------------------------------
 !
-      if (runtype .EQ. 1) then
+      if ((runtype .EQ. 1) .OR. (runtype .EQ. 3)) then
 !    
 !   
 !   
@@ -168,15 +196,16 @@
 !     set up finite difference calculations 
       print*, "Start Finite difference calcs . . ."
       print*
+      params(1,14) = 1.0d0      
 !   
 !   
 !     step size of 0.001 seems to work best   
-      h = 0.001d0
+      h = 0.00001d0
       print*, "      h = ", h
 !   
 !    
 !     calculate initial cost function for forward difference
-      call main(nx,ny,na,nl,np,alpha,params,runtype,Jcost0)
+      call main(nx,ny,na,nl,np,alpha,params,runtype,Jcost0,dJda_ad)
 !    
 !
 !
@@ -197,7 +226,7 @@
 !     
 !    
 !     call function with relevant perturbation    
-      call main(nx,ny,na,nl,np,alpha_fd,params,runtype,Jcost)
+      call main(nx,ny,na,nl,np,alpha_fd,params,runtype,Jcost,dJda_ad)
 !    
 !    
 !     calculate actual finite difference for this design variable 
@@ -205,6 +234,8 @@
 !    
 !    
       end do
+      print*    
+      print*    
       end if
 !    
 !    
@@ -212,9 +243,20 @@
 !    
 !    
 !    
-!    
+!     2: Adoint solver run    
 !-----------------------------------------------------------------------
 !    
+      if ((runtype .EQ. 2) .OR. (runtype .EQ. 3)) then
+      params(1,14) = 2.0d0      
+!    
+      print*, "Start adjoint calcs . . ."
+      print*
+      print*, "      begin flow solution . . ."
+      call main(nx,ny,na,nl,np,alpha,params,runtype,Jcost,dJda_ad)
+!    
+      print*    
+      print*    
+      end if
 !    
 !    
 !    
@@ -224,31 +266,59 @@
 !     display results    
 !-----------------------------------------------------------------------
 !
-      if (runtype .NE. 0) then    
+      if ((runtype .EQ. 1) .OR. (runtype .EQ. 2) .OR.
+     &    (runtype .EQ. 3)) then    
 !
-      print*    
-      print*    
+!
+!
+!
+      if (runtype .EQ. 3) then
+      do i = 1,na
+      dJda_error(1,i) = DABS(
+     &   dJda_fd(1,i)/dJda_ad(1,i) )
+      end do
+      end if
+!
+!
+!
+!
+!
+!    
+!     print to terminal 
       print*, "Results of sensitivity calcs . . ."
       print*    
       print*, "                 FD                      Adjoint" 
-!    
-!    
-!    
-!
       do i = 1,na
-!
-      print*, "      ", dJda_fd(1,i)
-!
+      print*, "      ", dJda_fd(1,i), dJda_ad(1,i)
       end do    
 !    
+!
+!
+!     write to file
+      open(999, file='sensitivities.plt')
+      write(999,*) 'VARIABLES = "x" "FD" "ADJ" "ERROR"'
+909   format(4f14.8)
+!
+      do i = 1,na
+            write(999,909) 
+     &                  DBLE(i),
+     &                  dJda_fd(1,i),
+     &                  dJda_ad(1,i),
+     &                  dJda_error(1,i)
+      end do
+      close(999)
 !    
-!    
-!    
-!    
-!    
+!
 !    
       end if
 !    
+!
+!
+!
+!
+!
+!
+!
 !-----------------------------------------------------------------------
 !
       print*
