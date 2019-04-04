@@ -5,9 +5,9 @@
 !    
       program wrapper
 !    
-      integer :: na = 40
+      integer :: na = 20
       integer :: np = 14
-      double precision, dimension(1,40) :: alpha, alpha_fd,
+      double precision, dimension(1,20) :: alpha, alpha_fd,
      &   dJda_fd, dJda_ad, dJda_error, c_pos
       double precision, dimension(1,14) :: params
 !    
@@ -69,8 +69,8 @@
 !    
 !     x cells      y cells      halo cells (must be 2 for JST)
 !    
-      nx = 70
-      ny = 12
+      nx = 50
+      ny = 8
       nl = 2
 !    
 !    
@@ -109,7 +109,7 @@
       params(1,9) = 0.71d0
       params(1,10) = 5.0d0
       params(1,11) = 1.0d0/25.0d0
-      params(1,12) = 0.2d0
+      params(1,12) = 0.4d0
 !    
 !    
 !     residual_tol
@@ -301,7 +301,7 @@
 !
       do i = 1,na
             write(999,909) 
-     &                  DBLE(i),
+     &                  c_pos(1,i),
      &                  dJda_fd(1,i),
      &                  dJda_ad(1,i),
      &                  dJda_error(1,i)
