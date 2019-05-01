@@ -13,11 +13,12 @@ time=${string^^}
 git add gitsync.sh
 git add README.md
 git add .gitignore
-git add ./frances
+#git add ./frances
 git add ./ernie
 git add ./harold
 git add ./ivan
 git add ./james
+git add ./kevin
 
 # rest of the sync commands
 
